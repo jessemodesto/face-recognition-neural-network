@@ -1,5 +1,4 @@
 import os
-
 import cv2
 import numpy as np
 import random
@@ -51,7 +50,7 @@ class FacialClassification:
         #esc to break, up down for binary
 
 
-example = FacialClassification('/home/jesse/PycharmProjects/Face Recognition Project')
+example = FacialClassification('')
 example.read_directory('Data_Collection')
 example.read_classification_csv()
 example.classify_face()
