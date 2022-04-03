@@ -2,7 +2,6 @@ import os
 import cv2
 import numpy as np
 import random
-import face_recognition
 
 
 class FacialClassification:
@@ -25,32 +24,46 @@ class FacialClassification:
 
         self.image_names_array.sort(key=get_integer)  # sorts image names array by number
 
-    def read_classification_csv(self):
-        classification_csv_path = os.path.join(self.project_directory, 'classification.csv')
-        if os.path.exists(classification_csv_path):  # checks to see if classification array is in the project directory
-            self.classification_array = np.genfromtxt(classification_csv_path, delimiter=',', dtype=int)
+    def read_classification_txt(self):
+        classification_txt_path = os.path.join(self.project_directory, 'classification.txt')
+        if os.path.exists(classification_txt_path):  # checks to see if classification array is in the project directory
+            self.classification_array = np.genfromtxt(classification_txt_path, delimiter=',', dtype=int)
         else:  # if not, it initializes the array with length equal to amount of images
             self.classification_array = np.zeros([len(self.image_names_array)], dtype=int)
             self.classification_array.fill(-1)
 
-
-
     def classify_face(self):
-        self.index = random.randint(0, len(self.image_names_array) - 1)  # pull a random index number
-        cv2_image = cv2.imread(os.path.join(self.image_directory, self.image_names_array[self.index]), cv2.WINDOW_NORMAL)
-        # pulls an image from the image dataset using the afformentioned random index
-        cv2.namedWindow(str(self.index), cv2.WINDOW_NORMAL)  # initialize image window
-        cv2.imshow(str(self.index), cv2_image)  # show image
+        index = random.randint(0, len(self.image_names_array) - 1)  # pull a random index number from image dataset
 
-        key = cv2.waitKey(0)
+        while True:  # infinite loop only broken by user input
+            if self.classification_array[index] == -1:  # checks to see if classified already
+                cv2_image = cv2.imread(
+                    os.path.join(self.image_directory, self.image_names_array[index]), cv2.WINDOW_NORMAL)
+                # pulls an image from the image dataset using the aforementioned random index
+                cv2.namedWindow('image', cv2.WINDOW_NORMAL)  # initialize image window
+                cv2.imshow('image', cv2_image)  # show image
 
-        #put other key iputs to classify
-        #classification goes into classificaiton array
-        #put conidtion in case array is filled with classifications (no -1)
-        #esc to break, up down for binary
+                key = cv2.waitKey(0)  # waits for input by user
+                if key == 82:  # if up arrow key is pressed, classify as 1
+                    self.classification_array[index] = 1
+
+                if key == 84:  # if down arrow key is pressed, classify as 0
+                    self.classification_array[index] = 0
+
+                if key == 27:  # if escape is pressed, breaks the loop and closes the window
+                    cv2.destroyAllWindows()
+                    break
+                # saves user classification as a txt everytime array is modified
+                np.savetxt(self.project_directory + 'classification.txt', self.classification_array, fmt='%i')
+            else:
+                if -1 not in self.classification_array:  # if all images have been classified, break and close window
+                    cv2.destroyAllWindows()
+                    break
+                # if already classified, pull another random index from image dataset
+                index = random.randint(0, len(self.image_names_array) - 1)
 
 
 example = FacialClassification('')
 example.read_directory('Data_Collection')
-example.read_classification_csv()
+example.read_classification_txt()
 example.classify_face()
