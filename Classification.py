@@ -32,7 +32,7 @@ class FacialClassification:
             self.classification_array = np.zeros([len(self.image_names_array)], dtype=int)
             self.classification_array.fill(-1)
 
-    def classify_face(self):
+    def classify_face(self, test_data_amount):
         index = random.randint(0, len(self.image_names_array) - 1)  # pull a random index number from image dataset
 
         while True:  # infinite loop only broken by user input
@@ -56,7 +56,8 @@ class FacialClassification:
                 # saves user classification as a txt everytime array is modified
                 np.savetxt(self.project_directory + 'classification.txt', self.classification_array, fmt='%i')
             else:
-                if -1 not in self.classification_array:  # if all images have been classified, break and close window
+                if np.count_nonzero(self.classification_array == -1) == test_data_amount:
+                    # if all training images have been classified, break and close window (sets aside test data)
                     cv2.destroyAllWindows()
                     break
                 # if already classified, pull another random index from image dataset
@@ -66,4 +67,4 @@ class FacialClassification:
 example = FacialClassification('')
 example.read_directory('Data_Collection')
 example.read_classification_txt()
-example.classify_face()
+example.classify_face(10)
